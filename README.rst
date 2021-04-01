@@ -295,12 +295,14 @@ HTTPD(HTTP Daemon)在服务器端处理请求/响应。最常见的 HTTPD 有 Li
     * HTTP 请求方法(``GET``, ``POST``, ``HEAD``, ``PUT``, ``DELETE``, ``CONNECT``, ``OPTIONS``, 或者 ``TRACE``)。直接在地址栏中输入 URL 这种情况下，使用的是 GET 方法
     * 域名：google.com
     * 请求路径/页面：/  (我们没有请求google.com下的指定的页面，因此 / 是默认的路径)
-* 服务器验证其上已经配置了 google.com 的虚拟主机
-* 服务器验证 google.com 接受 GET 方法
-* 服务器验证该用户可以使用 GET 方法(根据 IP 地址，身份信息等)
-* 如果服务器安装了 URL 重写模块（例如 Apache 的 mod_rewrite 和 IIS 的 URL Rewrite），服务器会尝试匹配重写规则，如果匹配上的话，服务器会按照规则重写这个请求
-* 服务器根据请求信息获取相应的响应内容，这种情况下由于访问路径是 "/" ,会访问首页文件（你可以重写这个规则，但是这个是最常用的）。
-* 服务器会使用指定的处理程序分析处理这个文件，假如 Google 使用 PHP，服务器会使用 PHP 解析 index 文件，并捕获输出，把 PHP 的输出结果返回给请求者
+* 大多数服务器中都内置了Servlet容器用来处理客户端请求，例如Tomcat，JBoss等。
+* 若是使用过SpringMVC搭建过服务器对于HttpServlet类绝对不会陌生，所有的Servlet类都是其子类，需要实现其doGet和doPost方法来处理请求。下面详细介绍Servlet的生命周期
+* 当客户端请求一个特定的Servlet时，服务其首先检查JVM中是否存在该Servlet实例。若是不存在，则先使用类加载器将该类加载到JVM中，然后创建新的实例，调用其init()方法进行初始化。
+* 在确定Servlet实例存在后，服务其调用其service()方法，并以一个request对象和response对象作为参数。需要注意的是，每当一个新的请求到来就新建一个新的线程来执行service()方法。这样服务器就可以并行的处理多个请求。
+* Servlet会话(Session): 因为HTTP协议是无状态的，所以需要Session来跟踪会话并存储会话的信息。当HttpServletRequest类的getSession()方法被调用时，服务器会要求客户端返回其浏览器中Cookie存储的SessionId的值，
+若为空则创建新的会话。收到SessionId值后服务器在内存中查找该id是否存在，若存在则证明该会话合法（该过程只适用于安全要求较低的网站）。
+* 当服务器处理完请求后（一般是读取或者修改完数据库中的数据），需要将结果返回给用户。因为数据是动态生成的，而返回给用户的HTML页面是静态的，服务器通过一些脚本语言或者前端框架将数据动态写入HTML文档中，然后将其返回给用户。
+用户浏览器收到该文档后，就开启了解析过程。
 
 内容分发网络（Content Distribution Network, CDN）
 -------------------
